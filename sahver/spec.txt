@@ -1,0 +1,51 @@
+A webpage (PWA capable for IOS mobile) for saving, converting and searching a personal catalogue of cooking recipes.
+General color scheme: light, off white background and yellowish accent. Logo is a white plate with lid (like at a restaurant) on yellow background.
+name: sahver
+in-app language: estonian
+
+Tabs you can switch between on left-hand collapsible sidebar. Signified by icons and showing tab name when switched to on main area:
+Teisenda (convert)
+Retseptid (recipes)
+Import/export
+sätted (settings).
+
+in convert, the user can paste an (english) recipe's ingredient list and the app converts all units of volume and mass to mL and g, while preserving teaspoons and tablespoons. Can work with ranges (5-6 oz), decimals (2.5 cups), fractions (3/4 cups) and other representations. For common ingredients (oil, flour, butter, water, milk, cream), also adds equivalent mass to volume amounts. A very old implementation of a similar page i made when i was younger is attached for reference. In the settings tab, the user can add ingredient density information and unit conversion information.
+
+In Recipes, there is a scrolling list of all saved recipes, which can be filtered (categories) or searched in a bar above. In the bottom right, there is a floating + button to trigger adding a new recipe.
+
+A new recipe requires:
+
+name
+labels (preset list, modifiable in settings. can choose multiple. originally [breakfast/salad/soup/dish/vegan/dessert/snack])
+image from gallery (optional)
+amount of servings
+ingredients (option to paste from clipboard)
+instructions (option to paste from clipboard)
+saved
+
+On clicking a recipe in the recipe list (name, image and tags visible when scropping), it expands to fill the working area. Back button in top left, edit button in top right.
+Timer widget at very bottom of each recipe.
+
+
+All user-specific data (recipes, settings, images) is stored in IndexedDB.
+in import/export, the user can export (for backup or transferral) their entire config (all recipes with accompanying information and images, all settings) or import from a previous export and override their current config with the imported one. The app should prompt the user to make a backup if a) changes have been made since the last backup and b) more than 7 days have passed since the last backup by changing the sidebar icon to have an exclamation mark.
+
+in settings, in addition to adding information for the conversion tab and filtering, the user can change the main color palette of the page.
+
+
+
+
+
+Test:
+
+conversion ?
+recipe creation
+timer +
+export-import
+data persistence
+all navigation (eg. cancelling recipe creation)
+UI layout
+
+
+TODO:
+fix dark palette sidebar text contrast

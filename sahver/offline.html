@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sahver - Võrguühendus puudub</title>
+<style>
+  :root { --accent: #f2b705; --bg: #f7f4ee; --text: #1c1a14; --text2: #6b6254; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100dvh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px; text-align: center; gap: 16px;
+  }
+  .icon { font-size: 64px; }
+  h1 { font-family: Georgia, serif; font-size: 26px; font-weight: 700; }
+  p  { color: var(--text2); font-size: 15px; line-height: 1.6; max-width: 320px; }
+  button {
+    margin-top: 8px;
+    padding: 11px 24px;
+    background: var(--accent); color: var(--text);
+    border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <div class="icon">📡</div>
+  <h1>Võrguühendus puudub</h1>
+  <p>Sahver vajab esmakordsel laadimisel internetiühendust. Kontrolli ühendust ja proovi uuesti.</p>
+  <p>Kui oled rakenduse varem avanud, peaks see töötama ka ilma internetita.</p>
+  <button onclick="location.reload()">↺ Proovi uuesti</button>
+</body>
+</html>

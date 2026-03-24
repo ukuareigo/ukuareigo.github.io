@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<!-- PWA / home-screen meta ─────────────────────────────────────── -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kes on kes?">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#cfba22">
+<link rel="manifest"         href="manifest.json">
+<link rel="icon"             type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+
+<title>Kes on kes?</title>
+
+<!-- Fonts ──────────────────────────────────────────────────────── -->
+<link rel="preload" href="./fonts/Anton/Anton-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="./fonts/Comic_Relief/ComicRelief-Regular.ttf" as="font" type="font/ttf" crossorigin>
+
+<script src="lang.js"></script>
+
+<style>
+@font-face {
+  font-family: 'Anton';
+  src: url('./fonts/Anton/Anton-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Comic Relief';
+  src: url('./fonts/Comic_Relief/ComicRelief-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   RESET & CSS CUSTOM PROPERTIES
+════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f0ebe2;
+  --navy:      #1c2b3a;
+  --navy-mid:  #2e4459;
+  --muted:     #8fa3b3;
+  --anchor-bg: #cfba22;
+  --anchor-fg: #e8f0f7;
+  --card-bg:   #ffffff;
+  --card-bdr:  #c8d8e4; 
+  --amber:     #e08a1a;
+  --amber-glow:rgba(224,138,26,0.35);
+  --green:     #3a9e6a;
+  --green-bg:  #d4f0e3;
+  --red:       #d94f4f;
+  --red-bg:    #fde0e0;
+  --yellow:    #cfba22;
+  --yellow-dark: #a98e14;
+  --body-font:      Comic Relief,  sans-serif;
+  --title-font:      Anton, sans-serif;
+}
+
+html, body {
+  width: 100vw; height: 100vh;
+  overflow: hidden;
+  touch-action: none;        
+  background: var(--bg);
+  font-family: var(--body-font);
+  color: var(--navy);
+  -webkit-user-select: none; 
+  user-select: none;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PORTRAIT-MODE OVERLAY
+   Hidden in landscape; the media query below reveals it in portrait.
+════════════════════════════════════════════════════════════════ */
+#portrait-wall {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--yellow); color: var(--anchor-fg);
+  z-index: 9999;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 18px; text-align: center; padding: 40px;
+}
+#portrait-wall .icon {
+  font-size: 3.5rem;
+  animation: rock 2s ease-in-out infinite alternate;
+}
+#portrait-wall p { font-size: 1.1rem; opacity: 0.8; max-width: 260px; line-height: 1.6; }
+@keyframes rock { from { transform: rotate(-25deg); } to { transform: rotate(25deg); } }
+@media (orientation: portrait) { #portrait-wall { display: flex; } }
+
+/* ════════════════════════════════════════════════════════════════
+   HEADER BAR
+════════════════════════════════════════════════════════════════ */
+#header {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: var(--yellow);
+  font-family: var(--title-font);
+  z-index: 300;          
+  padding: 0 18px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+}
+
+.header-main {
+  display: flex; align-items: center; gap: 10px;
+  height: 72px;
+}
+
+.header-title {
+  font-size: 2.5rem; font-weight: 800;
+  color: var(--navy);
+  letter-spacing: 0.04em; text-transform: uppercase;
+  flex: 1;           
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.divider { width: 2px; height: 80%; background: rgba(0,0,0,0.15); }
+
+/* Shared button styles */
+.btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  height: 32px; line-height: 1;  /* explicit height prevents subpixel differences */
+  border: none; border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--body-font);
+  font-size: 1rem; font-weight: 600;
+  letter-spacing: 0.03em; text-transform: uppercase;
+  transition: transform 0.1s, filter 0.1s;
+  white-space: nowrap;
+  flex-shrink: 0;     /* never let buttons shrink in tight layouts */
+}
+.btn:hover  { filter: brightness(1.12); }
+.btn:active { transform: scale(0.96); }
+
+#btn-lang-et,
+#btn-lang-en {
+  padding: 0;
+  overflow: hidden;
+  width: 44px;      
+  height: 32px;     
+}
+
+
+#btn-info     { background: var(--navy); color: var(--anchor-fg); }
+
+#btn-check      { background: var(--navy); color: #fff; }
+#btn-reset      { background: #fff;   color: var(--navy); }
+#btn-reset:hover { filter: brightness(0.92); }
+
+#info-panel {
+  display: none;
+  padding: 10px 2px 12px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  font-family: var(--body-font);
+  font-size: 1rem; line-height: 1.65; color: var(--navy);
+}
+#info-panel strong { color: var(--navy-mid); }
+
+/* ════════════════════════════════════════════════════════════════
+   GAME AREA
+   Full-screen container; anchors and cards are injected here by JS.
+════════════════════════════════════════════════════════════════ */
+#game-area { position: fixed; inset: 0; overflow: hidden; }
+
+#honeycomb-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.anchor {
+  position: absolute;
+  background: var(--anchor-bg);
+  border: 2.5px solid var(--anchor-bg);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  font-size: 0.78rem; font-weight: 700;
+  color: var(--navy);
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 6px 8px; z-index: 5;
+}
+
+/* Snap proximity highlight on anchor */
+.anchor.hl {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px var(--amber-glow), 0 0 14px var(--amber-glow);
+}
+
+@keyframes aFlashG {
+  0%,100% { background: var(--anchor-bg); border-color: var(--anchor-bg); }
+  35%,65% { background: var(--green); border-color: var(--green); box-shadow: 0 0 20px rgba(58,158,106,0.5); }
+}
+@keyframes aFlashY {
+  0%,100% { background: var(--anchor-bg); border-color: var(--anchor-bg); }
+  35%,65% { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 20px rgba(224,138,26,0.5); }
+}
+.anchor.flash-ok   { animation: aFlashG 3s ease-in-out; }
+.anchor.flash-warn { animation: aFlashY 3s ease-in-out; }
+
+.hex-clip {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+.card {
+  position: absolute;
+  background: var(--card-bdr);  /* outer colour = the visible hex "border" */
+  cursor: grab;
+  z-index: 20;
+  touch-action: none;  
+
+  filter: drop-shadow(0 3px 6px rgba(28,43,58,0.18));
+  transition: background 0.15s, filter 0.15s, top 0.15s, left 0.15s;
+  will-change: top, left;
+}
+
+.card.dragging {
+  cursor: grabbing; z-index: 500;
+  filter: drop-shadow(0 10px 24px rgba(28,43,58,0.40));
+  transition: none;
+}
+
+/* Snap-proximity highlight: amber border + amber glow */
+.card.hl {
+  background: var(--amber);
+  filter: drop-shadow(0 0 10px rgba(224,138,26,0.7));
+}
+
+/* Inner content layer — sits on top of the border layer */
+.card-face {
+  position: absolute; inset: 0;
+  background: var(--card-bg);
+  transform: scale(0.96);      /* shrinks inward, revealing outer border */
+  transform-origin: center;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  pointer-events: none;        /* all pointer events pass through to .card */
+}
+
+.card-face img {
+  width: 85%; height: 85%;
+  object-fit: contain; display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* Text cards — extra horizontal padding to keep text away from hex corners */
+.card-text {
+  padding: 10px 28px;
+  font-size: 0.7rem; line-height: 1.35;
+  color: var(--navy); text-align: center;
+}
+
+@keyframes cBorderG { 0%,100%{background:var(--card-bdr)} 40%,60%{background:var(--green)} }
+@keyframes cBorderR { 0%,100%{background:var(--card-bdr)} 40%,60%{background:var(--red)}   }
+@keyframes cFillG   { 0%,100%{background:var(--card-bg)}  40%,60%{background:var(--green-bg)} }
+@keyframes cFillR   { 0%,100%{background:var(--card-bg)}  40%,60%{background:var(--red-bg)}   }
+
+.card.flash-ok           { animation: cBorderG 3s ease-in-out; }
+.card.flash-err          { animation: cBorderR 3s ease-in-out; }
+.card.flash-ok  .card-face { animation: cFillG 3s ease-in-out; }
+.card.flash-err .card-face { animation: cFillR 3s ease-in-out; }
+
+
+/* ════════════════════════════════════════════════════════════════
+   RESULT POPUP
+   Replaces native alert(). Shown by adding .visible to the overlay.
+════════════════════════════════════════════════════════════════ */
+#popup-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(28,43,58,0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 1000;
+  align-items: center; justify-content: center;
+}
+#popup-overlay.visible { display: flex; }
+
+#popup {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 32px 36px;
+  max-width: 360px; width: 88%;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(28,43,58,0.35);
+  /* Springy entrance — cubic-bezier overshoot produces the "pop" feel */
+  animation: popIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popIn {
+  from { transform: scale(0.82); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+#popup-icon  { font-size: 2.8rem; margin-bottom: 12px; }
+#popup-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; color: var(--yellow); }
+#popup-body  { font-size: 1rem; line-height: 1.6; color: var(--yellow-dark); margin-bottom: 24px; }
+#popup-close {
+  background: var(--yellow-dark, #bf9624); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 10px 28px;
+  font-family: var(--body-font);
+  font-size: 1rem; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  cursor: pointer;
+  transition: filter 0.1s, transform 0.1s;
+}
+#popup-close:hover  { filter: brightness(1.15); }
+#popup-close:active { transform: scale(0.96); }
+</style>
+</head>
+<body>
+
+<!-- Portrait-mode overlay ─────────────────────────────────── -->
+<div id="portrait-wall">
+  <div class="icon">📱</div>
+  <p id="portrait-msg">Kasutatav ainult külili (landscape)</p>
+</div>
+
+<!-- Header ────────────────────────────────────────────────── -->
+<div id="header">
+  <div class="header-main">
+    <!-- meemeistrid logo inline from logo.png-->
+    <img src="logo.png" alt="Meemeistrid logo" style="height: 90%; width: auto; margin-right: 10px;">
+    <span class="header-title" id="header-title">Kes on kes?</span>
+    <div class="divider"></div>
+
+    <!--
+      Each button has:
+        .btn-icon — symbol (not translated)
+        .btn-label — text updated by applyLang()
+    -->
+    <button class="btn" id="btn-info">
+      <span class="btn-icon">ℹ</span>
+      <span class="btn-label">Juhend</span>
+    </button>
+    <button class="btn" id="btn-lang-et" style="display:none">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 15"
+          style="display:block;width:100%;height:100%;border-radius:6px;box-shadow:0 0 0 1px rgba(0,0,0,0.25);">
+        <rect width="21" height="5" y="0"  fill="#0072CE"/>
+        <rect width="21" height="5" y="5"  fill="#000000"/>
+        <rect width="21" height="5" y="10" fill="#FFFFFF"/>
+      </svg>
+    </button>
+    <button class="btn" id="btn-lang-en">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice"
+          style="display:block;width:100%;height:100%;border-radius:6px;box-shadow:0 0 0 1px rgba(0,0,0,0.25);">
+        <rect width="60" height="30" fill="#012169"/>
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="4"/>
+        <path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/>
+        <path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/>
+      </svg>
+    </button>
+    <button class="btn" id="btn-check">
+      <span class="btn-icon">✓</span>
+      <span class="btn-label">Kontrolli</span>
+    </button>
+    <button class="btn" id="btn-reset">
+      <span class="btn-icon">↺</span>
+      <span class="btn-label">Uuesti</span>
+    </button>
+  </div>
+
+  <!-- innerHTML is populated/updated by applyLang() from lang.js -->
+  <div id="info-panel"></div>
+</div>
+
+<!-- Game area ─────────────────────────────────────────────── -->
+<div id="game-area">
+  <img id="honeycomb-bg" src="honeycomb-bg.svg" aria-hidden="true">
+</div>
+
+<!-- Result popup ──────────────────────────────────────────── -->
+<div id="popup-overlay">
+  <div id="popup">
+    <div id="popup-icon"></div>
+    <div id="popup-title"></div>
+    <div id="popup-body"></div>
+    <button id="popup-close">Sulge</button>
+  </div>
+</div>
+
+<script>
+
+
+const CARD_W    = 158;
+const HEX_H     = Math.round(Math.sqrt(3) / 2 * CARD_W); // ≈ 137 px
+const ANCHOR_H  = 56;   // px — height of anchor label divs
+const SNAP_TH   = 35;   // px — card edge must be this close to trigger snap
+const UNSNAP_TH = 20;   // px — drag distance needed to detach a snapped card
+
+/* ════════════════════════════════════════════════════════════════
+   APPLICATION STATE
+════════════════════════════════════════════════════════════════ */
+/*
+  anchors — array of objects:
+    { el, x, y, dataIndex, slots:[card|null, card|null] }
+  dataIndex → which DATA row this anchor belongs to
+  slots[0]  → card snapped directly below anchor (or null)
+  slots[1]  → card snapped below slots[0] (or null)
+*/
+let anchors = [];
+
+/*
+  cards — array of objects:
+    { el, x, y, type, dataIndex, snappedTo, snappedSlot }
+  type        → 'text' | 'image'
+  dataIndex   → which DATA row this card belongs to
+  snappedTo   → anchor object, or null if free-floating
+  snappedSlot → 0 | 1 within the column, or null
+*/
+let cards = [];
+
+let drag          = null;  // active drag state (null = not dragging)
+let headerH       = 0;     // cached header height; cards must not go above this
+let infoPanelOpen = false; // whether the instructions panel is expanded
+let currentLang   = 'et'; // active language: 'et' | 'en'
+
+/* ════════════════════════════════════════════════════════════════
+   TRANSLATION HELPER
+   ────────────────────────────────────────────────────────────────
+   T(key, ...args)
+   Looks up TRANSLATIONS[currentLang][key].
+   If the value is a function, calls it with ...args (used for
+   strings that embed dynamic counts, e.g. popupErrBody).
+════════════════════════════════════════════════════════════════ */
+function T(key, ...args) {
+  const val = TRANSLATIONS[currentLang][key];
+  return typeof val === 'function' ? val(...args) : val;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   applyLang()
+   Refreshes every piece of user-visible text to match currentLang.
+   Called on language switch and at the end of init().
+
+   When called mid-game (language toggle), it also updates:
+     • anchor label text
+     • text card content (and reflows height if it changed)
+   Card positions and snap state are preserved — only text changes.
+════════════════════════════════════════════════════════════════ */
+function applyLang() {
+  // <html lang=""> for accessibility / screen readers
+  document.documentElement.lang = currentLang;
+
+  // Header title
+  document.getElementById('header-title').textContent = T('title');
+
+  // Info button — label reflects the current open/closed state
+  document.querySelector('#btn-info .btn-icon').textContent =
+    infoPanelOpen ? '✕' : 'ℹ';
+  document.querySelector('#btn-info .btn-label').textContent =
+    infoPanelOpen ? T('btnInfoClose') : T('btnInfo');
+
+  // Lang-switch button always shows the OTHER language (where you'll switch to)
+  document.getElementById('btn-lang-et').style.display = currentLang === 'et' ? 'none' : 'flex';
+  document.getElementById('btn-lang-en').style.display = currentLang === 'en' ? 'none' : 'flex';
+
+  document.querySelector('#btn-check .btn-label').textContent = T('btnCheck');
+  document.querySelector('#btn-reset .btn-label').textContent = T('btnReset');
+
+  // Info panel body (HTML content allowed — see lang.js)
+  document.getElementById('info-panel').innerHTML = T('infoPanelHtml');
+
+  // Portrait overlay message
+  document.getElementById('portrait-msg').textContent = T('portraitMsg');
+
+  // Popup close button (may be visible when language is switched mid-play)
+  document.getElementById('popup-close').textContent = T('popupClose');
+
+  // ── Live card / anchor retranslation ──────────────────────────
+  // These only do anything once the game board has been built (after init).
+  const data = T('data');
+
+  // Update anchor label text for each anchor
+  anchors.forEach(a => {
+    a.el.textContent = data[a.dataIndex][0];
+  });
+
+  cards.forEach(card => {
+    if (card.type !== 'text') return;
+
+    const newText = data[card.dataIndex][1];
+    const textEl  = card.el.querySelector('.card-text');
+    if (textEl) textEl.textContent = newText;
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   POPUP HELPERS
+════════════════════════════════════════════════════════════════ */
+/** Show the result popup with given icon / title / body strings */
+function showPopup(icon, title, body) {
+  document.getElementById('popup-icon').textContent  = icon;
+  document.getElementById('popup-title').textContent = title;
+  document.getElementById('popup-body').textContent  = body;
+  document.getElementById('popup-overlay').classList.add('visible');
+}
+
+function hidePopup() {
+  document.getElementById('popup-overlay').classList.remove('visible');
+}
+
+// Close on button click or on backdrop tap
+document.getElementById('popup-close').addEventListener('click', hidePopup);
+document.getElementById('popup-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('popup-overlay')) hidePopup();
+});
+
+/* ════════════════════════════════════════════════════════════════
+   UTILITY FUNCTIONS
+════════════════════════════════════════════════════════════════ */
+/** Random integer in [lo, hi) */
+const rnd = (lo, hi) => Math.floor(Math.random() * (hi - lo)) + lo;
+
+/**
+ * Fisher-Yates in-place shuffle.
+ * Used for: card spawn order, anchor display order.
+ */
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = ~~(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+}
+
+/**
+ * Axis-aligned rectangle overlap test.
+ * Used to try to spread initial card positions without overlapping.
+ */
+function overlaps(ax, ay, aw, ah, bx, by, bw, bh) {
+  return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+}
+
+/** Extract clientX/Y from mouse event or first touch point */
+function getPos(e) {
+  const s = (e.touches && e.touches[0])
+          || (e.changedTouches && e.changedTouches[0])
+          || e;
+  return { x: s.clientX, y: s.clientY };
+}
+
+/** Remove snap-highlight class from all highlighted elements */
+function clearHL() {
+  document.querySelectorAll('.hl').forEach(el => el.classList.remove('hl'));
+}
+
+/* ════════════════════════════════════════════════════════════════
+   INIT  — build (or rebuild) the complete game board
+   Called on load and on every reset.
+════════════════════════════════════════════════════════════════ */
+function init() {
+  if (infoPanelOpen) {
+    infoPanelOpen = false;
+    document.getElementById('info-panel').style.display = 'none';
+    applyLang(); // updates the button icon/label back to ℹ
+  }
+  drag = null; anchors = []; cards = [];
+  hidePopup();
+
+  // Remove previous anchors and cards
+  const area = document.getElementById('game-area');
+  Array.from(area.children).forEach(c => {
+    if (c.id !== 'honeycomb-bg') c.remove();
+  });
+
+  headerH = document.getElementById('header').offsetHeight;
+  const W    = window.innerWidth;
+  const H    = window.innerHeight;
+  const data = T('data');   // fetch the data array for the current language
+  const N    = data.length;
+
+  // ── Zone divider ─────────────────────────────────────────────
+  // The top third is the anchor zone; cards scatter in the lower two-thirds.
+  const zoneTop = Math.round(H / 3);
+
+  // ── Anchors ───────────────────────────────────────────────────
+  // anchorOrder is a shuffled index list that randomises the
+  // left-to-right display sequence of anchors on each reset.
+  // displayPos → screen column index (0…N-1)
+  // dataIdx    → which DATA row the anchor in that column represents
+  const anchorOrder = data.map((_, i) => i);
+  shuffle(anchorOrder);
+
+  const anchorY = headerH + 16;
+  const segW    = W / N;
+
+  anchors = anchorOrder.map((dataIdx, displayPos) => {
+    const x  = Math.round(displayPos * segW + (segW - CARD_W) / 2);
+    const el = document.createElement('div');
+    el.className   = 'anchor';
+    el.textContent = data[dataIdx][0];
+    el.style.cssText =
+      `left:${x}px; top:${anchorY}px; width:${CARD_W}px; height:${ANCHOR_H}px;`;
+    area.appendChild(el);
+
+    return { el, x, y: anchorY, dataIndex: dataIdx, slots: [null, null] };
+  });
+
+  // One text card + one image card per data row = 2N cards total.
+  const items = data.flatMap((d, i) => [
+    { type: 'text',  content: d[1], dataIndex: i },
+    { type: 'image', content: d[2], dataIndex: i },
+  ]);
+  shuffle(items);  // randomise which card appears where
+
+  const zoneH  = H - zoneTop - 8;
+  const placed = [];  // tracks placed bounding boxes for overlap avoidance
+
+  cards = items.map(item => {
+    // ── Outer hex div — shows as the border ──────────────────
+    const el = document.createElement('div');
+    el.className   = 'card hex-clip';
+    el.style.width  = CARD_W + 'px';
+    el.style.height = HEX_H  + 'px';
+
+    // ── Inner face div — the card content ────────────────────
+    // scale(0.96) creates the inward gap that reads as a border.
+    const face = document.createElement('div');
+    face.className = 'card-face hex-clip';
+
+    if (item.type === 'text') {
+      const p = document.createElement('div');
+      p.className   = 'card-text';
+      p.textContent = item.content;
+      face.appendChild(p);
+    } else {
+      const img     = document.createElement('img');
+      img.src       = item.content;
+      img.alt       = '';
+      img.draggable = false;
+      // If the image file is missing, show a localised text placeholder
+      img.onerror = () => {
+        img.style.display = 'none';
+        const fb = document.createElement('div');
+        fb.className   = 'card-text';
+        fb.textContent = T('imgMissing');
+        face.appendChild(fb);
+      };
+      face.appendChild(img);
+    }
+
+    el.appendChild(face);
+    area.appendChild(el);
+
+    // ── Non-overlapping random spawn position ─────────────────
+    // Up to 80 attempts to find a clear spot; after that, accept overlap.
+    let x, y, tries = 0;
+    do {
+      x = rnd(4, W - CARD_W - 4);
+      y = rnd(zoneTop + 6, zoneTop + Math.max(12, zoneH - HEX_H - 6));
+      tries++;
+    } while (tries < 80 && placed.some(r => overlaps(x, y, CARD_W, HEX_H, r.x, r.y, r.w, r.h)));
+    placed.push({ x, y, w: CARD_W, h: HEX_H });
+
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+
+    const card = {
+      el, x, y,
+      type:        item.type,
+      dataIndex:   item.dataIndex,
+      snappedTo:   null,
+      snappedSlot: null,
+    };
+
+    // Events attached to outer div; inner face has pointer-events:none
+    el.addEventListener('mousedown',  e => onPointerDown(e, card));
+    el.addEventListener('touchstart', e => onPointerDown(e, card), { passive: false });
+
+    return card;
+  });
+
+  applyLang();  // sync all text to current language
+}
+
+/* ════════════════════════════════════════════════════════════════
+   POINTER — DOWN  (begin drag)
+════════════════════════════════════════════════════════════════ */
+function onPointerDown(e, card) {
+  e.preventDefault(); e.stopPropagation();
+  const p = getPos(e);
+
+  drag = {
+    card,
+    sx: p.x, sy: p.y,          // pointer position at drag start
+    ox: p.x - card.x,          // pointer offset within the card element
+    oy: p.y - card.y,
+    dist:       0,
+    wasSnapped: card.snappedTo !== null, // remember if card was in a column
+    unsnapped:  false,          // set true once UNSNAP_TH distance is covered
+  };
+
+  card.el.classList.add('dragging');
+  card.el.style.zIndex = 500;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   POINTER — MOVE  (drag update)
+════════════════════════════════════════════════════════════════ */
+function onPointerMove(e) {
+  if (!drag) return;
+  e.preventDefault();
+
+  const p        = getPos(e);
+  const { card } = drag;
+  drag.dist = Math.hypot(p.x - drag.sx, p.y - drag.sy);
+
+  // ── Unsnap threshold ─────────────────────────────────────────
+  // Keep a snapped card in place until the pointer has moved
+  // UNSNAP_TH pixels — prevents accidental detachment on a tap.
+  if (drag.wasSnapped && !drag.unsnapped) {
+    if (drag.dist < UNSNAP_TH) return;
+    drag.unsnapped = true;
+    doUnsnap(card, true);  // cascade: slide slot-1 up if slot-0 is freed
+  }
+
+  // ── Clamp card to viewport ───────────────────────────────────
+  const W = window.innerWidth, H = window.innerHeight;
+  card.x  = Math.max(0,       Math.min(W - CARD_W, p.x - drag.ox));
+  card.y  = Math.max(headerH, Math.min(H - HEX_H,  p.y - drag.oy));
+  card.el.style.left = card.x + 'px';
+  card.el.style.top  = card.y + 'px';
+
+  // ── Snap highlight ───────────────────────────────────────────
+  // Show amber glow on the card and its potential snap target.
+  clearHL();
+  const tgt = findSnapTarget(card);
+  if (tgt) { card.el.classList.add('hl'); tgt.hlEl.classList.add('hl'); }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   POINTER — UP  (end drag, attempt snap)
+════════════════════════════════════════════════════════════════ */
+function onPointerUp() {
+  if (!drag) return;
+  const { card } = drag;
+
+  card.el.classList.remove('dragging');
+  // Restore z-index: snapped cards stack below the dragging layer
+  card.el.style.zIndex = card.snappedTo ? 10 + card.snappedSlot : 20;
+  clearHL();
+
+  // Try to snap — only if the card is currently free (was never snapped,
+  // or was just released via the unsnap threshold above).
+  if (!drag.wasSnapped || drag.unsnapped) {
+    const tgt = findSnapTarget(card);
+    if (tgt) doSnap(card, tgt.anchor, tgt.slot);
+  }
+
+  drag = null;
+}
+
+// Global listeners so drag works even when pointer moves off the card element
+document.addEventListener('mousemove',   onPointerMove);
+document.addEventListener('mouseup',     onPointerUp);
+document.addEventListener('touchmove',   onPointerMove,  { passive: false });
+document.addEventListener('touchend',    onPointerUp,    { passive: false });
+document.addEventListener('touchcancel', onPointerUp,    { passive: false });
+
+/* ════════════════════════════════════════════════════════════════
+   SNAP DETECTION
+   ────────────────────────────────────────────────────────────────
+   Two conditions must both hold to trigger a snap:
+     1. Horizontal centres within SNAP_TH px of each other
+     2. Card top edge within SNAP_TH px of the target's bottom edge
+
+   Targets checked:
+     slot 0 — bottom edge of the anchor div        (if slot 0 is empty)
+     slot 1 — bottom edge of the slot-0 card        (if slot 0 is full, slot 1 empty)
+   If both slots are occupied, no snap is offered.
+════════════════════════════════════════════════════════════════ */
+function findSnapTarget(card) {
+  const cx  = card.x + CARD_W / 2;  // horizontal centre of dragged card
+  const top = card.y;                // top edge of dragged card
+
+  for (const a of anchors) {
+    const aCX = a.x + CARD_W / 2;
+    if (Math.abs(cx - aCX) >= SNAP_TH) continue;  // horizontally too far
+
+    if (!a.slots[0]) {
+      // Slot 0 empty → snap to anchor bottom
+      if (Math.abs(top - (a.y + ANCHOR_H)) < SNAP_TH)
+        return { anchor: a, slot: 0, hlEl: a.el };
+    } else if (!a.slots[1]) {
+      // Slot 1 empty → snap below slot-0 card
+      const s0 = a.slots[0];
+      if (Math.abs(top - (s0.y + HEX_H)) < SNAP_TH)
+        return { anchor: a, slot: 1, hlEl: s0.el };
+    }
+    // Both slots full — no snap for this anchor
+  }
+  return null;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SNAP  — place card into a column slot
+════════════════════════════════════════════════════════════════ */
+function doSnap(card, anchor, slot) {
+  // Y: flush to anchor bottom (slot 0) or slot-0 card bottom (slot 1)
+  const snapY = slot === 0
+    ? anchor.y + ANCHOR_H
+    : anchor.slots[0].y + HEX_H;
+
+  card.x = anchor.x;
+  card.y = snapY;
+  card.el.style.left   = card.x + 'px';
+  card.el.style.top    = card.y + 'px';
+  card.el.style.zIndex = 10 + slot;  // slot 0 = z:10, slot 1 = z:11
+
+  card.snappedTo    = anchor;
+  card.snappedSlot  = slot;
+  anchor.slots[slot] = card;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   UNSNAP  — detach a card from its column
+   ────────────────────────────────────────────────────────────────
+   cascade: if slot-0 is removed and slot-1 is occupied,
+   slot-1 slides up into slot-0 via doSnap().
+   The CSS `transition: top 0.15s` on .card animates the movement.
+   (The .dragging class which suppresses transitions is NOT present
+    on the cascading card, so it animates cleanly.)
+════════════════════════════════════════════════════════════════ */
+function doUnsnap(card, cascade) {
+  const anchor = card.snappedTo;
+  const slot   = card.snappedSlot;
+
+  anchor.slots[slot] = null;
+  card.snappedTo     = null;
+  card.snappedSlot   = null;
+  card.el.style.zIndex = 20;
+
+  if (cascade && slot === 0 && anchor.slots[1]) {
+    const c1 = anchor.slots[1];
+    anchor.slots[1] = null;
+    c1.snappedTo    = null;
+    c1.snappedSlot  = null;
+    doSnap(c1, anchor, 0);  // slide c1 up; CSS transition animates it
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   CHECK RESULTS  — per-card evaluation
+   ────────────────────────────────────────────────────────────────
+   Each movable card is evaluated individually:
+     correct column → green flash on the card
+     wrong column   → red flash on the card
+
+   Each anchor receives:
+     flash-ok   (green)  — if every card in its column is correct
+     flash-warn (amber)  — if any card in its column is wrong
+
+   The result popup reports the total number of misplaced cards.
+════════════════════════════════════════════════════════════════ */
+document.getElementById('btn-check').addEventListener('click', () => {
+  // Require all 2N cards to be placed before allowing a check
+  if (!cards.every(c => c.snappedTo !== null)) {
+    showPopup('⚠️', T('popupWarnTitle'), T('popupWarnBody'));
+    return;
+  }
+
+  let wrongCardCount = 0;
+
+  anchors.forEach(anchor => {
+    // Collect the (up to) two cards in this column
+    const slots = [anchor.slots[0], anchor.slots[1]].filter(Boolean);
+    let anchorHasWrong = false;
+
+    slots.forEach(card => {
+      const ok = card.dataIndex === anchor.dataIndex;
+      if (!ok) { wrongCardCount++; anchorHasWrong = true; }
+
+      // Restart animation: remove class, force reflow, re-add class.
+      // The void offsetWidth flushes pending CSS changes so the animation
+      // replays from the beginning even if already running.
+      card.el.classList.remove('flash-ok', 'flash-err');
+      void card.el.offsetWidth;
+      card.el.classList.add(ok ? 'flash-ok' : 'flash-err');
+    });
+
+    anchor.el.classList.remove('flash-ok', 'flash-warn');
+    void anchor.el.offsetWidth;
+    anchor.el.classList.add(anchorHasWrong ? 'flash-warn' : 'flash-ok');
+  });
+
+  // Show the popup after the 3 s flash animations finish
+  setTimeout(() => {
+    showPopup(
+      wrongCardCount === 0 ? '🎉' : '❌',
+      T(wrongCardCount === 0 ? 'popupOkTitle' : 'popupErrTitle'),
+      wrongCardCount === 0 ? T('popupOkBody') : T('popupErrBody', wrongCardCount)
+    );
+  }, 3080);
+});
+
+/* ════════════════════════════════════════════════════════════════
+   RESET
+════════════════════════════════════════════════════════════════ */
+document.getElementById('btn-reset').addEventListener('click', init);
+
+/* ════════════════════════════════════════════════════════════════
+   INFO PANEL TOGGLE
+════════════════════════════════════════════════════════════════ */
+document.getElementById('btn-info').addEventListener('click', () => {
+  infoPanelOpen = !infoPanelOpen;
+  document.getElementById('info-panel').style.display = infoPanelOpen ? 'block' : 'none';
+  // applyLang updates the icon and label based on infoPanelOpen
+  applyLang();
+  // Header height changes when panel opens/closes — recalculate so
+  // card clamping stays accurate
+  setTimeout(() => { headerH = document.getElementById('header').offsetHeight; }, 20);
+});
+
+/* ════════════════════════════════════════════════════════════════
+   LANGUAGE TOGGLE
+   ────────────────────────────────────────────────────────────────
+   Switches between 'et' and 'en', then re-renders all text.
+   The game state (card positions, snapped cards) is preserved —
+   only UI labels change. Data content (anchor labels, card text)
+   is not translated here; that is handled via the DATA array.
+════════════════════════════════════════════════════════════════ */
+
+// Keep click for mouse users (desktop)
+
+function setLang(lang, btn) {
+  btn.blur();
+  if (currentLang !== lang) { currentLang = lang; applyLang(); }
+}
+
+document.getElementById('btn-lang-et').addEventListener('click', e => {
+  setLang('et', e.currentTarget);
+});
+document.getElementById('btn-lang-en').addEventListener('click', e => {
+  setLang('en', e.currentTarget);
+});
+/* ════════════════════════════════════════════════════════════════
+   SERVICE WORKER  — offline PWA support
+   ────────────────────────────────────────────────────────────────
+   Registers sw.js which caches all listed assets on install.
+   Works only over HTTPS (or localhost) — the 'serviceWorker' in
+   navigator check safely no-ops in other contexts.
+════════════════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   START
+════════════════════════════════════════════════════════════════ */
+window.addEventListener('load', init);
+</script>
+</body>
+</html>

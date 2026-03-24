@@ -1,0 +1,24 @@
+{
+  "name": "Kes on kes?",
+  "short_name": "Kes on kes?",
+  "description": "Mesilaste tundmise harjutus",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#f0ebe2",
+  "theme_color": "#cfba22",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
