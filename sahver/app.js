@@ -84,7 +84,7 @@ let recipes = [];
  * Persisted under key 'app' in the 'settings' store.
  */
 let settings = {
-  labels: ['hommikusöök', 'salat', 'supp', 'roog', 'vegan', 'magustoit', 'suupiste'],
+  labels: ['hommikusöök', 'salat', 'supp', 'roog', 'vegan', 'magustoit', 'suupiste','jook','lihtne','suvine'],
 
   /**
    * Ingredient densities in g/ml.

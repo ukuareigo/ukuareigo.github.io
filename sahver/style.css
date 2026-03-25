@@ -687,14 +687,14 @@ img { display: block; max-width: 100%; }
 .bwarn strong { display: block; margin-bottom: 3px; font-size: 15px; }
 
 /* ─── Settings view ────────────────────────────────────── */
-.ss { padding: 22px 26px; border-bottom: 1px solid var(--border); max-width: 620px; }
+.ss { padding: 22px 26px; max-width: 620px; }
 /* Extra bottom padding on mobile so rubber-band scroll doesn't hide last button */
 #vs, #vio { padding-bottom: env(safe-area-inset-bottom, 0px); overscroll-behavior-y: none; }
 #vs::after, #vio::after {
   content: '';
   display: block;
   /* Spacer taller than the nav bar so rubber-band scroll can't hide last button */
-  height: calc(var(--bnh) + 48px + env(safe-area-inset-bottom, 0px));
+  height: calc(var(--bnh) + env(safe-area-inset-bottom, 0px));
 }
 .ss h2 { font-family: var(--fh); font-size: 18px; margin-bottom: 5px; }
 .ss p { color: var(--text2); font-size: 14px; margin-bottom: 14px; line-height: 1.6; }
@@ -763,7 +763,7 @@ img { display: block; max-width: 100%; }
   #sidebar { display: none; }
   #bnav    { display: block; }
   #main    { padding-bottom: calc(var(--bnh) + env(safe-area-inset-bottom, 0px)); }
-  #vc .cbody { grid-template-columns: 1fr; padding: 14px; }
+  #vc .cbody { grid-template-columns: 1fr; padding: 14px; padding-bottom: calc(var(--bnh) + env(safe-area-inset-bottom, 0px)); }
   .cards-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); padding: 12px 12px calc(var(--bnh) + 16px + env(safe-area-inset-bottom, 0px)); }
   .vhdr  { padding: 16px 16px 10px; }
   .dbody {
@@ -773,10 +773,10 @@ img { display: block; max-width: 100%; }
   .fbody {
     padding: 14px;
     /* Extra space so rubber-band scroll can't hide the save button under the nav */
-    padding-bottom: calc(var(--bnh) + 32px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--bnh) + 24px + env(safe-area-inset-bottom, 0px));
   }
   .lhdr  { padding: 14px 14px 8px; }
-  #timerw { padding: 10px 14px 10px; gap: 10px; position: static; margin-bottom: calc(var(--bnh) + 16px + env(safe-area-inset-bottom, 0px)); }
+  #timerw { padding: 10px 14px 10px; gap: 10px; position: static; margin-bottom: calc(var(--bnh) + env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 460px) {
   .cards-grid { grid-template-columns: repeat(2, 1fr); padding: 10px 10px calc(var(--bnh) + 16px + env(safe-area-inset-bottom, 0px)); gap: 10px; }
