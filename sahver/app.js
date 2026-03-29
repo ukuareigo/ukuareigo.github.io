@@ -936,6 +936,11 @@ async function openDetail(id) {
   showPanel('pd');
 }
 
+function parseLocaleNumber(str) {
+  if (!str) return NaN;
+  return parseFloat(str.replace(',', '.'));
+}
+
 /**
  * Renders the ingredient list with amounts multiplied by the given scale factor.
  * @param {Object} recipe
@@ -944,23 +949,40 @@ async function openDetail(id) {
 function renderIngredients(recipe, scale) {
   const list = document.getElementById('dil');
   list.innerHTML = '';
+
   for (const ing of (recipe.ingredients || [])) {
-    const li       = document.createElement('li');
-    const rawAmt   = ing.amount || '';
-    const num      = parseFloat(rawAmt);
-    const scaled   = isNaN(num)
+    const li = document.createElement('li');
+
+    const rawAmt = ing.amount || '';
+    const num    = parseLocaleNumber(rawAmt);
+
+    const scaled = isNaN(num)
       ? rawAmt
       : fmtNum(num * scale) + ' ' + (ing.unit || '');
+
     const cb = document.createElement('input');
-    cb.type      = 'checkbox';
+    cb.type = 'checkbox';
     cb.className = 'view-check';
     cb.setAttribute('aria-label', ing.name || '');
-    cb.addEventListener('change', () => li.classList.toggle('checked', cb.checked));
-    li.prepend(cb);
-    li.innerHTML += `<span class="iamt">${escHtml(scaled.trim())}</span><span>${escHtml(ing.name || '')}</span>`;
+    cb.addEventListener('change', () =>
+      li.classList.toggle('checked', cb.checked)
+    );
+
+    const spanAmt = document.createElement('span');
+    spanAmt.className = 'iamt';
+    spanAmt.textContent = scaled.trim();
+
+    const spanName = document.createElement('span');
+    spanName.textContent = ing.name || '';
+
+    li.appendChild(cb);
+    li.appendChild(spanAmt);
+    li.appendChild(spanName);
+
     list.appendChild(li);
   }
 }
+
 
 /** Renders the numbered step list in the detail panel. */
 function renderSteps(recipe) {
@@ -1081,7 +1103,7 @@ function renderFormLabels(activeLabels) {
 }
 
 /** Units available in the ingredient unit dropdown. */
-const INGREDIENT_UNITS = ['g', 'kg', 'ml', 'l', 'tk', 'dl', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'näpuotsatäis'];
+const INGREDIENT_UNITS = ['g', 'kg', 'ml', 'l', 'tk', 'dl', 'tl', 'spl', 'cup', 'oz', 'lb'];
 
 /** Set of known units in lowercase for O(1) lookup. */
 const UNIT_SET = new Set(INGREDIENT_UNITS.map(u => u.toLowerCase()));
@@ -1634,30 +1656,51 @@ function _setTimerDoneState() {
  * Plays a short four-note ascending chime using the Web Audio API.
  * Triggered automatically when the timer reaches zero.
  */
+let audioCtx;
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+function unlockAudio() {
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') {
+    ctx.resume();
+  }
+}
+
+
+
+
 function playAlertSound() {
-  const ctx   = new (window.AudioContext || window.webkitAudioContext)();
-  const now   = ctx.currentTime;
-  const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const notes = [523, 659, 784, 1047];
 
   notes.forEach((freq, i) => {
     const osc  = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
+
     osc.frequency.value = freq;
-    osc.type            = 'sine';
+    osc.type = 'sine';
 
     const t = now + i * 0.18;
     gain.gain.setValueAtTime(0, t);
     gain.gain.linearRampToValueAtTime(0.3, t + 0.05);
     gain.gain.linearRampToValueAtTime(0, t + 0.22);
+
     osc.start(t);
     osc.stop(t + 0.25);
   });
 }
 
+
 function bindTimer() {
   document.getElementById('tstart').addEventListener('click', toggleTimer);
+  document.getElementById('tstart').addEventListener('click', playAlertSound); // unlock audio on first interaction
   document.getElementById('treset').addEventListener('click', resetTimer);
 
   // Reconcile timer when user returns to the tab / app after being away
