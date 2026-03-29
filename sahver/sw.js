@@ -1,6 +1,6 @@
 // ── Cache version ─────────────────────────────────────────────
 // Bump this string on every deploy to bust the old cache.
-const CACHE = 'sahver-12';
+const CACHE = 'sahver-13';
 
 // App shell files to pre-cache on install.
 // IMPORTANT: every file listed here must exist on the server.
