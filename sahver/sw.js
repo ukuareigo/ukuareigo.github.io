@@ -1,130 +1,116 @@
-// ── Cache version ─────────────────────────────────────────────
-// Bump this string on every deploy to bust the old cache.
-const CACHE = 'sahver-13';
+// ─────────────────────────────────────────────
+//  SINGLE VERSION NUMBER — change only this
+// ─────────────────────────────────────────────
+const VERSION = '14';
+const CACHE = `sahver-${VERSION}`;
 
-// App shell files to pre-cache on install.
-// IMPORTANT: every file listed here must exist on the server.
-// A single 404 used to abort the entire install — now handled gracefully.
+// Helper to append ?v=VERSION to URLs
+const v = url => `${url}?v=${VERSION}`;
+
+// ─────────────────────────────────────────────
+//  FILES TO PRE-CACHE (auto-versioned)
+// ─────────────────────────────────────────────
 const SHELL = [
-  './index.html',
-  './style.css',
-  './app.js',
-  './manifest.json',
-  './offline.html',
-  './apple-touch-icon.png',
-  './favicon.ico',
-  './favicon-16x16.png',
-  './favicon-32x32.png',
-  './android-chrome-192x192.png',
-  './android-chrome-512x512.png',
-  './icon-16.png',
-  './icon-32.png',
-  './icon-180.png',
-  './icon-192.png',
-  './icon-512.png',
+  v('./index.html'),
+  v('./offline.html'),
+  v('./style.css'),
+  v('./app.js'),
+  v('./manifest.json'),
 
-  // Self-hosted fonts
-  './fonts/DM_Sans/DMSans-VariableFont_opsz,wght.ttf',
-  './fonts/DM_Sans/DMSans-Italic-VariableFont_opsz,wght.ttf',
-  './fonts/Lora/Lora-VariableFont_wght.ttf',
-  './fonts/Lora/Lora-Italic-VariableFont_wght.ttf',
+  v('./apple-touch-icon.png'),
+  v('./favicon.ico'),
+  v('./favicon-16x16.png'),
+  v('./favicon-32x32.png'),
+  v('./android-chrome-192x192.png'),
+  v('./android-chrome-512x512.png'),
+  v('./icon-16.png'),
+  v('./icon-32.png'),
+  v('./icon-180.png'),
+  v('./icon-192.png'),
+  v('./icon-512.png'),
+
+  v('./fonts/DM_Sans/DMSans-VariableFont_opsz,wght.ttf'),
+  v('./fonts/DM_Sans/DMSans-Italic-VariableFont_opsz,wght.ttf'),
+  v('./fonts/Lora/Lora-VariableFont_wght.ttf'),
+  v('./fonts/Lora/Lora-Italic-VariableFont_wght.ttf'),
 ];
 
-// ── Install: pre-cache the app shell ─────────────────────────
-// Each file is cached individually so a single failure (e.g. a missing
-// icon) does not abort the entire install and leave the app uncached.
-self.addEventListener('install', e => {
-  e.waitUntil((async () => {
+
+// ─────────────────────────────────────────────
+//  INSTALL — pre-cache shell + activate instantly
+// ─────────────────────────────────────────────
+self.addEventListener('install', event => {
+  event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     await Promise.allSettled(
       SHELL.map(url =>
         cache.add(url).catch(err =>
-          console.warn(`[SW] Failed to cache ${url}:`, err)
+          console.warn('[SW] Failed to cache', url, err)
         )
       )
     );
-    await self.skipWaiting();
+    self.skipWaiting(); // activate immediately
   })());
 });
 
-// ── Activate: delete any old cache versions ───────────────────
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-      ))
-      .then(() => self.clients.claim())
-  );
+// ─────────────────────────────────────────────
+//  ACTIVATE — delete old caches + take control
+// ─────────────────────────────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.filter(k => k !== CACHE).map(k => caches.delete(k))
+    );
+    await self.clients.claim(); // control all pages immediately
+  })());
 });
 
-// ── Fetch ─────────────────────────────────────────────────────
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+// ─────────────────────────────────────────────
+//  MESSAGE — allow app to force activation
+// ─────────────────────────────────────────────
+self.addEventListener('message', event => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
-  const url = new URL(e.request.url);
+// ─────────────────────────────────────────────
+//  FETCH — stale-while-revalidate for everything
+// ─────────────────────────────────────────────
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
 
-  // Ignore non-http schemes (chrome-extension://, data:, blob: etc.)
+  const url = new URL(event.request.url);
   if (!url.protocol.startsWith('http')) return;
 
-  const isFont = url.hostname.includes('googleapis') ||
-                 url.hostname.includes('gstatic');
-
-  if (isFont) {
-    e.respondWith(networkFirstFont(e.request));
-  } else {
-    e.respondWith(cacheFirst(e.request));
-  }
+  event.respondWith(staleWhileRevalidate(event.request));
 });
 
-// ── Network-first (Google Fonts) ─────────────────────────────
-async function networkFirstFont(request) {
-  try {
-    const response = await fetch(request);
-    const cache    = await caches.open(CACHE);
-    cache.put(request, response.clone());
-    return response;
-  } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    return new Response('', { status: 503, statusText: 'Service Unavailable' });
-  }
-}
+// ─────────────────────────────────────────────
+//  STRATEGY: stale-while-revalidate
+// ─────────────────────────────────────────────
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE);
 
-// ── Cache-first (app shell + assets) ─────────────────────────
-async function cacheFirst(request) {
-  // ── Navigation fallback ───────────────────────────────────
-  // The browser navigates to '/' but the cache stores './index.html'
-  // under its full URL. If there's no exact match for the navigation
-  // request, fall back to the cached index.html explicitly.
-  const isNavigation = request.mode === 'navigate';
+  const cached = await cache.match(request);
 
-  const cached = await caches.match(request) ||
-    (isNavigation ? await caches.match('./index.html') : null);
-
-  // Background refresh — keeps the cache up to date for next visit
-  const networkPromise = fetch(request)
-    .then(async response => {
-      if (response.ok) {
-        const cache = await caches.open(CACHE);
-        cache.put(request, response.clone());
-      }
+  const network = fetch(request)
+    .then(response => {
+      if (response.ok) cache.put(request, response.clone());
       return response;
     })
     .catch(() => null);
 
-  // Serve cache immediately if available
-  if (cached) return cached;
+  return cached || network || fallback(request);
+}
 
-  // No cache — wait for network
-  const networkResponse = await networkPromise;
-  if (networkResponse) return networkResponse;
-
-  // Both failed — serve offline page for navigation, 503 for assets
-  if (isNavigation) {
-    const offline = await caches.match('./offline.html');
-    if (offline) return offline;
+// ─────────────────────────────────────────────
+//  FALLBACKS
+// ─────────────────────────────────────────────
+async function fallback(request) {
+  if (request.mode === 'navigate') {
+    return caches.match('./offline.html');
   }
-
-  return new Response('', { status: 503, statusText: 'Service Unavailable' });
+  return new Response('', { status: 503 });
 }

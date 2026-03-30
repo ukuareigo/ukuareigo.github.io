@@ -2300,8 +2300,22 @@ async function init() {
 
   // Register the service worker for offline / PWA support (fails silently if absent)
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  navigator.serviceWorker.register('./service-worker.js').then(reg => {
+    if (reg.waiting) {
+      reg.waiting.postMessage('SKIP_WAITING');
+    }
+
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed' && reg.waiting) {
+          reg.waiting.postMessage('SKIP_WAITING');
+          }
+        });
+    });
+  });
   }
+
 
   // Request persistent storage so the browser doesn't evict our cache
   // and IndexedDB data during periods of inactivity. Silently ignored
