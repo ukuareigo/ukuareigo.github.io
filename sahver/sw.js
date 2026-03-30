@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────
 //  SINGLE VERSION NUMBER — change only this
+// also in index.html
 // ─────────────────────────────────────────────
 const VERSION = '14';
 const CACHE = `sahver-${VERSION}`;
