@@ -208,8 +208,8 @@ html, body {
   0%,100% { background: var(--anchor-bg); border-color: var(--anchor-bg); }
   35%,65% { background: var(--amber); border-color: var(--amber); box-shadow: 0 0 20px rgba(224,138,26,0.5); }
 }
-.anchor.flash-ok   { animation: aFlashG 3s ease-in-out; }
-.anchor.flash-warn { animation: aFlashY 3s ease-in-out; }
+.anchor.flash-ok   { animation: aFlashG 6s ease-in-out; }
+.anchor.flash-warn { animation: aFlashY 6s ease-in-out; }
 
 .hex-clip {
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
@@ -269,10 +269,10 @@ html, body {
 @keyframes cFillG   { 0%,100%{background:var(--card-bg)}  40%,60%{background:var(--green-bg)} }
 @keyframes cFillR   { 0%,100%{background:var(--card-bg)}  40%,60%{background:var(--red-bg)}   }
 
-.card.flash-ok           { animation: cBorderG 3s ease-in-out; }
-.card.flash-err          { animation: cBorderR 3s ease-in-out; }
-.card.flash-ok  .card-face { animation: cFillG 3s ease-in-out; }
-.card.flash-err .card-face { animation: cFillR 3s ease-in-out; }
+.card.flash-ok           { animation: cBorderG 6s ease-in-out; }
+.card.flash-err          { animation: cBorderR 6s ease-in-out; }
+.card.flash-ok  .card-face { animation: cFillG 6s ease-in-out; }
+.card.flash-err .card-face { animation: cFillR 6s ease-in-out; }
 
 
 /* ════════════════════════════════════════════════════════════════
