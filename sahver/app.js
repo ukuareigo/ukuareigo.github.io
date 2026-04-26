@@ -532,6 +532,8 @@ function sanitiseLine(line) {
     .replace(/(\d)\s*[–—]\s*(\d)/g, '$1-$2')
     // Collapse any double-spaces left behind and trim
     .replace(/\s{2,}/g, ' ')
+    // Replace comma between two digits with a dot, e.g. "1,5 cups" → "1.5 cups"
+    .replace(/(\d),(\d)/g, '$1.$2')
     .trim();
 }
 
