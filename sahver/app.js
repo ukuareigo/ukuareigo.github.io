@@ -521,8 +521,6 @@ function sanitiseLine(line) {
     .replace(/[▢□☐☑☒]/g, '')
     // Leading bullet characters (but NOT a mid-line en-dash, handled below)
     .replace(/^[\s•·\-–—*]+/, '')
-    // Leading list numbering: "1." or "1)"
-    .replace(/^\d+[.)]\s*/, '')
     // Multiplier token at line start: "2x ", "3× ", "×2 " etc.
     // Only strip when it's a bare Nx/×N with no unit following immediately.
     .replace(/^(\d+\s*[xX×]|[xX×]\s*\d+)\s+/, '')
